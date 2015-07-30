@@ -100,11 +100,56 @@ var geojson;
 		});
 	}
 
+var geojsonMinZoom = 17,geojsonMaxZoom = 20;
+var	emptyData = {"type": "FeatureCollection",
+		"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },	                                                                                
+		"features": []};
+var emptyGeojson = L.geoJson(emptyData,{style:style});
+var orgGeojson = L.geoJson(tsunamiData,{style:style});
 
-geojson = L.geoJson(tsunamiData, {
-	style: style,
-	onEachFeature: onEachFeature
-}).addTo(map);
+geojson = L.geoJson(emptyData, {style: style}).addTo(map);
+
+function getGeoJSONLayer(){
+	var _zoom = map.getZoom();
+	var _data;
+	if (_zoom >= geojsonMinZoom && _zoom <= geojsonMaxZoom){
+		return orgGeojson;
+	}else{
+		return emptyGeojson;
+	}
+}
+function updateGeoJSONLayer(){
+	geojson.clearLayers();
+	var _layers = getGeoJSONLayer();
+	var _bounds = map.getBounds();
+	_layers.eachLayer(function(layer){
+		if (_bounds.contains(layer.getBounds())){
+			layer.on({
+				mouseover: highlightFeature,
+				mouseout: resetHighlight,
+				click: zoomToFeature
+			}).addTo(geojson);
+
+		}
+	},this);
+	geojson.addTo(map);
+}
+
+updateGeoJSONLayer();
+
+var UpdateControl = L.Control.extend({
+	options: {
+        position: 'bottomleft'
+    },
+    onAdd:function(map){
+    	var container = L.DomUtil.create('div', '');
+    	container.innerHTML = "<button onclick=\"updateGeoJSONLayer()\">データ更新</button>";
+
+    	return container;
+    }
+});
+map.addControl(new UpdateControl());
+
 
 //オーバーレイ選択画面
 var Map_Over = {
