@@ -99,7 +99,7 @@ var geojson;
 			click: zoomToFeature
 		});
 	}
-$.getJSON("./data/hiroo_tsunami.geojson", function(data) {
+$.getJSON("data/hiroo_tsunami.geojson", function(data) {
 		for (var i = 0; i < data.features.length; i++) {
 			delete data.features[i].properties["原点X"];
 			delete data.features[i].properties["原点Y"];
